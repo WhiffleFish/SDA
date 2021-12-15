@@ -10,7 +10,7 @@ game = SimpleIIGame([
 p1 = SimpleIIPlayer(game,1, [0.1,0.2,0.7])
 p2 = SimpleIIPlayer(game,2, [0.1,0.2,0.7])
 
-train_both!(p1,p2,1000)
+train_both!(p1,p2,10_000_000, show_progress=true)
 p = plot(p1, p2, lw=2)
 # savefig(p, "img/RPS_CFR.svg")
 

@@ -1,6 +1,10 @@
 using Revise
 using CounterfactualRegret
-using CounterfactualRegret: IIEMatrixGame, Kuhn, SpaceGame
+using CounterfactualRegret: IIEMatrixGame, Kuhn
+
+game = Kuhn()
+sol = CFRSolver(game, debug=true)
+@profiler train!(sol,10_000)
 
 game = SpaceGame(5,10)
 sol = ESCFRSolver(game;debug=true)
