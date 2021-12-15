@@ -69,9 +69,10 @@ function Plots.plot(data::SpaceSolData)
 
     fig = plt.figure()
     ax = plt.axes(polar=true)
-    b_sat = plt.bar(θ, σ_sat, alpha=0.5, color="red", width=2π/(T-1))
-    b_sat = plt.bar(θ, σ_ground, alpha=0.5, color="blue", width=2π/(T-1))
-    b2 = plt.plot(θ, reward_data, c="green")
+    b_sat = plt.bar(θ, σ_sat, alpha=0.5, color="red", width=2π/(T-1), label="Satellite Strategy")
+    b_sat = plt.bar(θ, σ_ground, alpha=0.5, color="blue", width=2π/(T-1), label="Ground Strategy")
+    b2 = plt.plot(θ, reward_data, c="green", label="Reward")
+    legend()
     display(fig)
 
     return fig
