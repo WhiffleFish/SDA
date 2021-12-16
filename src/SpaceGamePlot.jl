@@ -53,8 +53,8 @@ end
 function solution_data(sol)
     σ_sat = sat_strat(sol)
     L = length(σ_sat)
-    θ = LinRange(0, 2π, L)
-
+    Δθ = 2π/(L+1)
+    θ = LinRange(0, 2π-Δθ, L)
     σ_ground = marginal_ground_strat(sol)
     reward_data = cardioid.(θ)
 
