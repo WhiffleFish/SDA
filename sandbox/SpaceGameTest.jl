@@ -3,7 +3,7 @@ using SDA
 game = SDA.SpaceGame(7,20)
 
 solver = ESCFRSolver(game)
-train!(solver, 10_000, show_progress=true)
+train!(solver, 1_000, show_progress=true)
 
 using Plots
 using PyPlot
