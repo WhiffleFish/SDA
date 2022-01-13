@@ -1,6 +1,6 @@
 using StaticArrays
 
-const SpaceGameInfoState = NTuple{3,Int} # (player, time, budget)
+const SpaceGameInfoState = SVector{3,Int} # (player, time, budget)
 
 struct SpaceGameHist
     p::Int # current player
@@ -58,4 +58,4 @@ CounterfactualRegret.initialhist(g::SpaceGame) = SpaceGameHist(1, 0, 0, g.budget
 
 CounterfactualRegret.utility(::SpaceGame, i::Int, h::SpaceGameHist) = i == 2 ? h.score : -h.score
 
-CounterfactualRegret.infokey(::SpaceGame, h::SpaceGameHist) = (h.p, h.t, h.p===2 ? h.budget : 0)
+CounterfactualRegret.infokey(::SpaceGame, h::SpaceGameHist) = SpaceGameInfoState(h.p, h.t, h.p===2 ? h.budget : 0)
