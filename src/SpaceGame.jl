@@ -56,3 +56,5 @@ CFR.initialhist(g::SpaceGame) = SpaceGameHist(1, 0, 0, g.budget, false)
 CFR.utility(::SpaceGame, i::Int, h::SpaceGameHist) = i === 2 ? h.score : -h.score
 
 CFR.infokey(::SpaceGame, h::SpaceGameHist) = SpaceGameInfoState(h.p, h.t, h.p===2 ? h.budget : 0)
+
+CFR.observation(::SpaceGame, h, a, h′) = zero(UInt)

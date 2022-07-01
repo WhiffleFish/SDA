@@ -16,8 +16,8 @@ struct GenCache{INT<:SciMLBase.AbstractODEIntegrator}
     dt::Float64
 end
 
-function GenCache(dt::float64)
-    sys = ContinuousDynamicalSystem(sat_dynamics, @SVector zeros(4), 0.0)
+function GenCache(dt::Float64)
+    sys = ContinuousDynamicalSystem(sat_dynamics, @SVector(zeros(4)), 0.0)
     return GenCache(integrator(sys), dt)
 end
 
@@ -32,8 +32,6 @@ function Base.step(cache::GenCache, s::SVector, Δv::Float64)
     step!(int, cache.dt)
     return get_state(int)
 end
-
-Base.step(g::TrackingGame, s::SVector, Δv::Float64) = step(g.integrator, s, Δv)
 
 #=
 using Plots
