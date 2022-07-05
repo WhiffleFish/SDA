@@ -11,6 +11,6 @@ export SpaceGame
 include("SpaceGamePlot.jl")
 export solution_data
 
-include(joinpath("TrackingGame", "TrackingGame.jl"))
+include(joinpath("TrackingGames", "TrackingGames.jl"))
 
 end # module
