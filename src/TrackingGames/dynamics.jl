@@ -33,6 +33,26 @@ function Base.step(cache::GenCache, s::SVector, Δv::Float64)
     return get_state(int)
 end
 
+height(s::SVector{4,Float64}) = sqrt(s[1]^2 + s[2]^2)
+
+function circular_state_cart(x,y)
+    r = sqrt(x^2 + y^2)
+    θ = atan(y,x)
+    return SA[x,y, circular_vel(r,θ)...]
+end
+
+function circular_state_rad(r,θ)
+    y,x = r .* sincos(θ)
+    return SA[x,y, circular_vel(r,θ)...]
+end
+
+function circular_vel(r,θ)
+    a_g = μ_EARTH / r^2
+    ω = sqrt(a_g / r)
+    v_t = r*ω
+    return v_t .* sincos(θ)
+end
+
 #=
 using Plots
 

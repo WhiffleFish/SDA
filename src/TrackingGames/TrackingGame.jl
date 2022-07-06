@@ -1,14 +1,15 @@
 const INITIAL_SAT_STATES = (
-    SA[0.0,-1.5R_EARTH, 5000., 0.0],
-    SA[1.0R_EARTH,-1.0R_EARTH, 5000., 0.0],
-    SA[1.0R_EARTH,-1.0R_EARTH, 2500., 2500.],
-    SA[1.0R_EARTH, 1.0R_EARTH,-2500., 2500.]
+    circular_state_rad(R_EARTH, deg2rad(000.)),
+    circular_state_rad(R_EARTH, deg2rad(090.)),
+    circular_state_rad(R_EARTH, deg2rad(180.)),
+    circular_state_rad(R_EARTH, deg2rad(270.)),
 )
 
 const GOAL_ALTS = (
-    1.5R_EARTH,
-    2.0R_EARTH,
-    2.5R_EARTH
+    1.0R_EARTH,
+    1.1R_EARTH,
+    1.3R_EARTH,
+    1.5R_EARTH
 )
 
 # create custom iterator maybe?
@@ -25,8 +26,8 @@ struct TrackingGameHist
     p2_info::Vector{Float64}
 end
 
-Base.@kwdef struct TrackingGame{N, G, IS, GS} <: Game{TrackingGameHist, Vector{Float64}} # infokey not type stable
-    dt::Float64     = 100.
+Base.@kwdef struct TrackingGame{N, G, IS, GS} <: Game{TrackingGameHist, Vector{Float64}}
+    dt::Float64     = 500.
     max_steps::Int  = 5
     n_sectors::Int  = 4
     budget::Int     = 5
@@ -34,7 +35,7 @@ Base.@kwdef struct TrackingGame{N, G, IS, GS} <: Game{TrackingGameHist, Vector{F
     tol::Float64    = 10_000.
     goal_states::GS = GOAL_ALTS
     init_states::IS = INITIAL_SAT_STATES
-    sat_actions::SVector{N,Float64}  = SA[-10., 0., 10.]
+    sat_actions::SVector{N,Float64}  = SA[-100., 0., 100.]
 end
 
 CFR.initialhist(g::TrackingGame) = TrackingGameHist(0, @SVector(zeros(4)), -1.0, g.budget, 0, 0, Float64[1], Float64[2])

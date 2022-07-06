@@ -1,16 +1,3 @@
-const INITIAL_SAT_STATES = (
-    SA[0.0,-1.5R_EARTH, 5000., 0.0],
-    SA[1.0R_EARTH,-1.0R_EARTH, 5000., 0.0],
-    SA[1.0R_EARTH,-1.0R_EARTH, 2500., 2500.],
-    SA[1.0R_EARTH, 1.0R_EARTH,-2500., 2500.]
-)
-
-const GOAL_ALTS = (
-    1.5R_EARTH,
-    2.0R_EARTH,
-    2.5R_EARTH
-)
-
 # create custom iterator maybe?
 const OBS_CHANCE_ACTIONS = Iterators.product(INITIAL_SAT_STATES, GOAL_ALTS) |> collect
 
@@ -41,7 +28,7 @@ Base.step(g::ObsTrackingGame, s::SVector, Δv::Float64) = step(g.gen, s, Δv)
 
 CFR.player(::ObsTrackingGame, h) = h.p
 
-CFR.chance_actions(::ObsTrackingGame, h) = OBSCHANCE_ACTIONS
+CFR.chance_actions(::ObsTrackingGame, h) = OBS_CHANCE_ACTIONS
 
 # TODO: type stability
 function CFR.actions(g::ObsTrackingGame, h::ObsTrackingGameHist)
