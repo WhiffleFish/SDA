@@ -86,7 +86,8 @@ function Plots.plot(data::SpaceSolData)
         # edgecolor = "black"
     )
     b2 = plt.plot([θ; first(θ)], reward_data, c="green", label="Reward")
-    legend(loc="best", bbox_to_anchor=(0.75, 0.0, 0.30, 0.0))
+    legend()
+    # legend(loc="best", bbox_to_anchor=(0.75, 0.0, 0.30, 0.0))
     display(fig)
 
     return fig

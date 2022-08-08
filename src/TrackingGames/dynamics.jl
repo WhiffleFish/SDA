@@ -11,25 +11,31 @@ function sat_dynamics(u, p, t)
     return SA[vx, vy, a_x, a_y]
 end
 
-struct GenCache{INT<:SciMLBase.AbstractODEIntegrator}
+struct GenCache{SYS,INT<:SciMLBase.AbstractODEIntegrator}
+    sys::SYS
     integrator::INT
     dt::Float64
 end
 
 function GenCache(dt::Float64)
     sys = ContinuousDynamicalSystem(sat_dynamics, @SVector(zeros(4)), 0.0)
-    return GenCache(integrator(sys), dt)
+    return GenCache(sys,integrator(sys), dt)
 end
 
-function Base.step(cache::GenCache, s::SVector, Δv::Float64)
-    int = cache.integrator
+function bump_vel(s, Δv)
     x,y,vx,vy = s
     θv = atan(vy,vx)
     Δvx = Δv*cos(θv)
     Δvy = Δv*sin(θv)
     s′ = s + SA[0., 0., Δvx, Δvy] # single impulse
+    return s′
+end
+
+function Base.step(cache::GenCache, s::SVector, Δv::Float64)
+    int = cache.integrator
+    s′ = bump_vel(s, Δv)
     reinit!(int, s′)
-    step!(int, cache.dt)
+    step!(int, cache.dt, true)
     return get_state(int)
 end
 
