@@ -1,6 +1,6 @@
-using Revise
 using CounterfactualRegret
-using CounterfactualRegret: SpaceGame, SpaceGameHist, Kuhn
+# using CounterfactualRegret: SpaceGame, SpaceGameHist, Kuhn
+using SDA
 using Plots
 
 game = SpaceGame(5,10)
@@ -56,48 +56,162 @@ cardioid(θ,a=1) = 2a*(1-cos(θ))
 plot(θ, cardioid, proj=:polar)
 
 ##
+using BestResponsePOMDP
+B = 3
+game = SpaceGame(3,10)
+sol = CFRSolver(game)
+train!(sol, 10_000; show_progress=true)
 
-@recipe function f(sol::CounterfactualRegret.AbstractCFRSolver{H,K,G}) where {H,K,G <: CounterfactualRegret.IIEMatrixGame}
-    layout --> 2
-    link := :both
-    framestyle := [:axes :axes]
+approx_exploitability(sol, 100_000)
 
-    xlabel := "Training Steps"
-
-    L1 = length(sol.I[0].σ)
-    # labels1 = Matrix{String}(undef, 1, L1)
-    # for i in eachindex(labels1); labels1[i] = L"a_{%$(i)}"; end
-
-    @series begin
-        subplot := 1
-        ylabel := "Strategy"
-        title := "Player 1"
-        # labels := labels1
-        reduce(hcat,I[0].hist)'
-    end
-
-    L2 = length(sol.I[1].σ)
-    labels2 = Matrix{String}(undef, 1, L2)
-    # for i in eachindex(labels2); labels2[i] = L"a_{%$(i)}"; end
-
-    @series begin
-        subplot := 2
-        title := "Player 2"
-        # labels := labels2
-        reduce(hcat,I[1].hist)'
+T = 10
+t = 4
+B = 3
+start = div(T,2) - div(B,2)
+finish = start + B-1
+new_sol = deepcopy(sol)
+for (k,v) in new_sol.I
+    if k[1] == 2
+        t = k[2]
+        if start ≤ t ≤ finish
+            v.s .= (0.0, 1.0)
+        else
+            v.s .= (1.0, 0.0)
+        end
+    else
+        v.s .= (1.0, 0.0)
     end
 end
 
-game = CounterfactualRegret.IIEMatrixGame([
-    (1,1) (0,0) (0,0);
-    (0,0) (0,2) (3,0);
-    (0,0) (2,0) (0,3);
-])
-sol1 = ESCFRSolver(game;debug=true)
-train!(sol1, 10_000)
+data = solution_data(new_sol)
+p = plot(data)
+using PyPlot
+PyPlot.savefig("naive_strategy.svg")
 
-plot(reduce(hcat, sol1.I[0].hist)')
+approx_exploitability(new_sol, 100_000, new_sol.game, 1)
 
-sol1 isa CounterfactualRegret.AbstractCFRSolver{H,K,G} where {H,K,G <: CounterfactualRegret.IIEMatrixGame}
+data
+SDA.cardioid.(data.θ)
 
-typeof(game) <: CounterfactualRegret.IIEMatrixGame
+
+new_sol2 = deepcopy(sol)
+for (k,v) in new_sol2.I
+    t = k[2]
+    if k[1] == 2
+        if start ≤ t ≤ finish
+            v.s .= (0.0, 1.0)
+        else
+            v.s .= (1.0, 0.0)
+        end
+    else
+        if start ≤ t ≤ finish
+            v.s .= (1.0, 0.0)
+        else
+            v.s .= (0.0, 1.0)
+        end
+    end
+end
+
+data = solution_data(new_sol2)
+plot(data)
+PyPlot.savefig("exploitative_sat.svg")
+
+plot(solution_data(sol))
+PyPlot.savefig("NE_strat.svg")
+
+using Base.Threads
+nthreads()
+N = 100
+vals = zeros(N)
+@threads for i ∈ 1:N
+    vals[i] = approx_exploitability(sol, 100_000)
+end
+histogram(vals)
+
+
+
+## new budget study
+
+function fill_heuristic!(sol, b, T)
+    T = 10
+    start = div(T,2) - div(b,2)
+    finish = start + b-1
+    for (k,v) in sol.I
+        t = k[2]
+        if k[1] == 2
+            if start ≤ t ≤ finish
+                v.s .= (0.0, 1.0)
+            else
+                v.s .= (1.0, 0.0)
+            end
+        else
+            if start ≤ t ≤ finish
+                v.s .= (1.0, 0.0)
+            else
+                v.s .= (0.0, 1.0)
+            end
+        end
+    end
+end
+
+using ProgressMeter
+
+exp_hist = zeros(10)
+@showprogress for b ∈ 1:10
+    game = SpaceGame(b,10)
+    _sol = CFRSolver(game)
+    train!(_sol, 1)
+    _new_sol = deepcopy(sol)
+    fill_heuristic!(_new_sol, b, 10)
+    evaluate(_new_sol)
+    exp_hist[b] = approx_exploitability(_new_sol, 1_000_000, game, 2; use_tree_value=false)/4
+end
+
+plot(
+    exp_hist.*2;
+    xlabel="budget",
+    ylabel="Satellite Score",
+    title="Pure Strategy Performance",
+    labels="",
+    lw = 2)
+
+exp_hist2 = zeros(10)
+exp_hist2_ne = zeros(10)
+for b ∈ 1:10
+    @show b
+    game = SpaceGame(b,10)
+    _sol = CFRSolver(game)
+    train!(_sol, 1_000; show_progress=true)
+    _new_sol = deepcopy(_sol)
+    fill_heuristic!(_new_sol, b, 10)
+    exp_hist2[b] = first(evaluate(_new_sol))/2
+    exp_hist2_ne[b] = first(evaluate(_sol))/2
+end
+
+
+sol = CFRSolver(SpaceGame(5,10))
+train!(sol, 1)
+max_score = sum(SDA.cardioid(θ) for θ in solution_data(sol).θ) / 2
+
+
+y1 = [max_score;copy(exp_hist2_ne)]
+y2 = [max_score;copy(exp_hist2)]
+x = 0:length(y1)-1 |> collect
+
+
+plot(
+    hcat(x,x),
+    hcat(y1, y2);
+    xlabel="Budgeted Sensor Observations",
+    ylabel="Satellite Score \n(Higher for more undetected mode changes)",
+    title="Strategy Performance Comparison",
+    lw=5,
+    xticks = 0:10,
+    yticks = 0:10,
+    marker=:square,
+    # markercolor=:red,
+    label = ["NE Strategy" "Best Pure Strategy"])
+
+
+
+savefig("StrategyPerforamanceComparison.svg")
