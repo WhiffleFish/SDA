@@ -6,7 +6,8 @@ const GOAL_ALTS = (
     1.5R_EARTH,
     1.7R_EARTH,
     1.9R_EARTH,
-    2.0R_EARTH
+    2.1R_EARTH,
+    2.3R_EARTH
 )
 
 goal_alt(vec::AbstractVector) = vec[2]
