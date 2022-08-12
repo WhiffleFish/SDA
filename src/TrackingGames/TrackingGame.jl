@@ -1,46 +1,45 @@
 const INITIAL_SAT_STATES = (
-    circular_state_rad(R_EARTH, deg2rad(000.)),
-    circular_state_rad(R_EARTH, deg2rad(090.)),
-    circular_state_rad(R_EARTH, deg2rad(180.)),
-    circular_state_rad(R_EARTH, deg2rad(270.)),
+    circular_state_rad(1.5R_EARTH, deg2rad(000.)),
 )
 
 const GOAL_ALTS = (
-    1.0R_EARTH,
-    1.1R_EARTH,
-    1.3R_EARTH,
-    1.5R_EARTH
+    1.5R_EARTH,
+    1.7R_EARTH,
+    1.9R_EARTH,
+    2.0R_EARTH
 )
+
+goal_alt(vec::AbstractVector) = vec[2]
 
 # create custom iterator maybe?
 const CHANCE_ACTIONS = Iterators.product(INITIAL_SAT_STATES, GOAL_ALTS) |> collect
 
 struct TrackingGameHist
     p::Int
-    sat_state::SVector{4, Float64}
-    goal_alt::Float64
+    sat_state::SVector{4, Float32}
+    goal_alt::Float32
     budget::Int
     guess::Int
     t::Int
-    p1_info::Vector{Float64}
-    p2_info::Vector{Float64}
+    p1_info::Vector{Float32}
+    p2_info::Vector{Float32}
 end
 
-Base.@kwdef struct TrackingGame{N, G, IS, GS} <: Game{TrackingGameHist, Vector{Float64}}
+Base.@kwdef struct TrackingGame{N, G, IS, GS} <: Game{TrackingGameHist, Vector{Float32}}
     dt::Float64     = 500.
     max_steps::Int  = 5
     n_sectors::Int  = 4
     budget::Int     = 5
     gen::G          = GenCache(dt)
-    tol::Float64    = 10_000.
+    tol::Float64    = 0.1R_EARTH
     goal_states::GS = GOAL_ALTS
     init_states::IS = INITIAL_SAT_STATES
     sat_actions::SVector{N,Float64}  = SA[-100., 0., 100.]
 end
 
-CFR.initialhist(g::TrackingGame) = TrackingGameHist(0, @SVector(zeros(4)), -1.0, g.budget, 0, 0, Float64[1], Float64[2])
+CFR.initialhist(g::TrackingGame) = TrackingGameHist(0, @SVector(zeros(Float32, 4)), -1.0, g.budget, 0, 0, Float32[1], Float32[2])
 
-Base.step(g::TrackingGame, s::SVector, Δv::Float64) = step(g.gen, s, Δv)
+Base.step(g::TrackingGame, s::SVector, Δv::AbstractFloat) = step(g.gen, s, Δv)
 
 CFR.player(::TrackingGame, h) = h.p
 
@@ -92,7 +91,7 @@ end
 """
 Chance turn
 """
-function CFR.next_hist(g::TrackingGame, h::TrackingGameHist, a::Tuple)
+function CFR.next_hist(g::TrackingGame, h::TrackingGameHist, a::Tuple{<:SVector, <:AbstractFloat})
     @assert iszero(player(g,h))
     p2_info = copy(h.p2_info)
     initial_state, goal_alt = a
@@ -122,18 +121,6 @@ function ground_obs(g::TrackingGame, h::TrackingGameHist, a::Int)
     sector_div = 2π / g.n_sectors
     sector = Int(θ ÷ sector_div)
     return float(sector == a)
-end
-
-
-# FIXME: NOT USED - DELETE MAYBE
-function CFR.observation(g::TrackingGame, h::TrackingGameHist, a::Float64)
-    return (zero(Float64), zero(Float64)) # sat doesn't know wtf is going on
-end
-
-# FIXME: NOT USED - DELETE MAYBE
-function CFR.observation(g::TrackingGame, h::TrackingGameHist, a::Tuple)
-    initial_state, goal_alt = a
-    return (zero(Float64), a)
 end
 
 function CFR.utility(g::TrackingGame, p::Int, h::TrackingGameHist)

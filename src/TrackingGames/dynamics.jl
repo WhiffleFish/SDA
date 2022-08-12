@@ -31,7 +31,7 @@ function bump_vel(s, Δv)
     return s′
 end
 
-function Base.step(cache::GenCache, s::SVector, Δv::Float64)
+function Base.step(cache::GenCache, s::SVector, Δv::AbstractFloat)
     int = cache.integrator
     s′ = bump_vel(s, Δv)
     reinit!(int, s′)
