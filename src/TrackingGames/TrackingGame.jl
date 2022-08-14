@@ -125,21 +125,17 @@ function ground_obs(g::TrackingGame, h::TrackingGameHist, a::Int)
 end
 
 function CFR.utility(g::TrackingGame, p::Int, h::TrackingGameHist)
-    x,y = h.sat_state # this works but seems a lil dicey and unclear
+    x,y = h.sat_state
     guess = g.goal_states[h.guess]
     alt = sqrt(x^2 + y^2)
-    if abs(alt - h.goal_alt) < g.tol
-        if guess == h.goal_alt
+    if abs(alt - h.goal_alt) < g.tol # satellite reaches target
+        if guess == h.goal_alt # ground station guesses correctly
             return isone(p) ? 1.0 : -1.0
-        else
+        else # ground station guesses incorrectly
             return isone(p) ? -1.0 : 1.0
         end
-    else
-        if guess == h.goal_alt
-            return isone(p) ? 1.0 : -1.0
-        else
-            return 0.0
-        end
+    else # satellite does not reach target
+        return 0.0
     end
 end
 

@@ -20,7 +20,7 @@ function plot_traj!(p, game, s, Δv, α=1.0) # TODO: return final state, so we d
     plot!(p, t[:,1], t[:,2], lw=3, c=:red, label="", alpha=α)
 end
 
-function plot_satellite_trajectories(sol; init_state_idx::Int=1, goal_idx::Int=1, max_depth=10, prob_thresh=1e-3)
+function plot_satellite_trajectories(sol; init_state_idx::Int=1, goal_idx::Int=1, max_depth=sol.game.max_steps-1, prob_thresh=1e-3)
     game = sol.game
     h0 = initialhist(game)
     a_chance = chance_actions(game, h0)[init_state_idx, goal_idx]
@@ -29,8 +29,8 @@ function plot_satellite_trajectories(sol; init_state_idx::Int=1, goal_idx::Int=1
     I0 = infokey(game, h)
     s0 = SVector{4, Float64}(I0[3:end])
     goal_alt = I0[2]
-    
-    p = plot(xticks=0, yticks=0,aspect_ratio=:equal)
+
+    p = plot(xticks=0, yticks=0, aspect_ratio=:equal, showaxis=false)
     plot_goal_region!(p, game, goal_alt)
     plot_sat_strats!(p, sol, I0, s0; max_depth, prob_thresh)
     return p
