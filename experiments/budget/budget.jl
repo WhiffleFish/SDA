@@ -59,7 +59,7 @@ plot(
     # markercolor=:red,
     label = "Best Pure Strategy")
 
-savefig("BestPureStrategy.svg")
+savefig(joinpath(@__DIR__, "img", "BestPureStrategy.svg"))
 
 plot(
     hcat(x,x),
@@ -74,4 +74,4 @@ plot(
     # markercolor=:red,
     label = ["Best Pure Strategy" "NE Strategy"])
 
-savefig("StrategyPerformanceComparison.svg")
+savefig(joinpath(@__DIR__, "img", "StrategyPerformanceComparison.svg"))
