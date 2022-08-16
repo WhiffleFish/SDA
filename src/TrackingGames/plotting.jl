@@ -41,10 +41,11 @@ function plot_sat_strats!(p, sol, I, s, η=1.0, d=0; max_depth=10, prob_thresh=1
     σ = strategy(sol, I)
     A = sol.game.sat_actions
     for i in eachindex(σ, A)
-        plot_traj!(p, sol.game, s, A[i], η*σ[i])
+        η′ = η*σ[i]
+        η′ > prob_thresh && plot_traj!(p, sol.game, s, A[i], η′)
         s′ = step(sol.game, s, A[i])
         I′ = push!(copy(I), A[i])
-        plot_sat_strats!(p, sol, I′, s′, η*σ[i], d+1; max_depth, prob_thresh)
+        plot_sat_strats!(p, sol, I′, s′, η′, d+1; max_depth, prob_thresh)
     end
     nothing
 end
