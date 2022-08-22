@@ -16,8 +16,10 @@ struct SpaceGame <: Game{SpaceGameHist, SpaceGameInfoState}
 end
 
 CFR.player(::SpaceGame, h::SpaceGameHist) = h.p
+CFR.player(::SpaceGame, k::SpaceGameInfoState) = first(k)
 
 CFR.actions(::SpaceGame, h::SpaceGameHist) = (:wait, :act)
+CFR.actions(::SpaceGame, k::SpaceGameInfoState) = (:wait, :act)
 
 cardioid(θ) = 2.0*(1.0-cos(θ))
 

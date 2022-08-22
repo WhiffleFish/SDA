@@ -28,21 +28,22 @@ end
 
 Base.@kwdef struct TrackingGame{N, G, IS, GS} <: Game{TrackingGameHist, Vector{Float32}}
     dt::Float64     = 500.
-    max_steps::Int  = 5
+    max_steps::Int  = 8
     n_sectors::Int  = 4
-    budget::Int     = 5
+    budget::Int     = typemax(Int)
     gen::G          = GenCache(dt)
     tol::Float64    = 0.1R_EARTH
     goal_states::GS = GOAL_ALTS
     init_states::IS = INITIAL_SAT_STATES
-    sat_actions::SVector{N,Float64}  = SA[-100., 0., 100.]
+    sat_actions::SVector{N,Float64}  = SA[-500., -100., 0., 100., 500.]
 end
 
 CFR.initialhist(g::TrackingGame) = TrackingGameHist(0, @SVector(zeros(Float32, 4)), -1.0, g.budget, 0, 0, Float32[1], Float32[2])
 
 Base.step(g::TrackingGame, s::SVector, Δv::AbstractFloat) = step(g.gen, s, Δv)
 
-CFR.player(::TrackingGame, h) = h.p
+CFR.player(::TrackingGame, h::TrackingGameHist) = h.p
+CFR.player(::TrackingGame, k::Vector{Float32}) = floor(Int, first(k))
 
 CFR.chance_actions(::TrackingGame, h) = CHANCE_ACTIONS
 
@@ -50,6 +51,23 @@ CFR.chance_actions(::TrackingGame, h) = CHANCE_ACTIONS
 function CFR.actions(g::TrackingGame, h::TrackingGameHist)
     return if isone(player(g,h))
         if h.t == g.max_steps
+            eachindex(g.goal_states)
+        else
+            0:g.n_sectors # if 0, don't scan
+        end
+    else
+        g.sat_actions
+    end
+end
+
+function is_last_step(g::TrackingGame, k::Vector{Float32})
+    return length(k) == g.max_steps*2 + 1
+end
+
+# TODO: type stability
+function CFR.actions(g::TrackingGame, k::Vector{Float32})
+    return if isone(first(k))
+        if is_last_step(g, k)
             eachindex(g.goal_states)
         else
             0:g.n_sectors # if 0, don't scan
