@@ -2,7 +2,7 @@ module TrackingGames
 
 using CounterfactualRegret
 const CFR = CounterfactualRegret
-using DynamicalSystems
+using DynamicalSystemsBase
 using Plots
 using StaticArrays # already exported by DynamicalSystems
 
