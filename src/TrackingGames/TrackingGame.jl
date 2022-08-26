@@ -1,3 +1,9 @@
+#=
+Time starts at 0
+from time steps 0 up to and including T-1
+At step T ground station must guess goal altitude
+=#
+
 const INITIAL_SAT_STATES = (
     circular_state_rad(1.5R_EARTH, deg2rad(000.)),
 )
