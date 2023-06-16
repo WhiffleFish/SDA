@@ -12,11 +12,11 @@ PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
-CounterfactualRegret = "0.4.3"
-Plots = "1.31"
-ProgressMeter = "1.7"
-PyPlot = "2.10"
-StaticArrays = "1.5"
+# CounterfactualRegret = "0.4.3"
+# Plots = "1.31"
+# ProgressMeter = "1.7"
+# PyPlot = "2.10"
+# StaticArrays = "1.5"
 
 [extras]
 CounterfactualRegret = "9fefe0b7-a0d5-4e12-a8ed-3472cccdfc49"

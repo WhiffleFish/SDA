@@ -16,8 +16,8 @@ end
 function plot_traj!(p, game, s, Δv, α=1.0) # TODO: return final state, so we don't have to redo the step
     u0 = bump_vel(s, Δv)
     sys = ContinuousDynamicalSystem(sat_dynamics, u0, 0.0)
-    t = trajectory(sys, game.dt, Δt = game.dt/100)
-    plot!(p, t[:,1], t[:,2], lw=3, c=:red, label="", alpha=α)
+    X,t = trajectory(sys, game.dt, Δt = game.dt/100)
+    plot!(p, X[:,1], X[:,2], lw=3, c=:red, label="", alpha=α)
 end
 
 function plot_satellite_trajectories(sol; init_state_idx::Int=1, goal_idx::Int=1, max_depth=sol.game.max_steps-1, prob_thresh=1e-2, show_earth=true, kwargs...)

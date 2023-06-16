@@ -11,15 +11,14 @@ function sat_dynamics(u, p, t)
     return SA[vx, vy, a_x, a_y]
 end
 
-struct GenCache{SYS,INT<:SciMLBase.AbstractODEIntegrator}
+struct GenCache{SYS}
     sys::SYS
-    integrator::INT
     dt::Float64
 end
 
 function GenCache(dt::Float64)
     sys = ContinuousDynamicalSystem(sat_dynamics, @SVector(zeros(4)), 0.0)
-    return GenCache(sys,integrator(sys), dt)
+    return GenCache(sys, dt)
 end
 
 function bump_vel(s, Δv)
@@ -32,11 +31,11 @@ function bump_vel(s, Δv)
 end
 
 function Base.step(cache::GenCache, s::SVector, Δv::AbstractFloat)
-    int = cache.integrator
+    sys = cache.sys
     s′ = bump_vel(s, Δv)
-    reinit!(int, s′)
-    step!(int, cache.dt, true)
-    return get_state(int)
+    reinit!(sys, s′)
+    step!(sys, cache.dt, true)
+    return get_state(sys)
 end
 
 height(s::SVector{4,Float64}) = sqrt(s[1]^2 + s[2]^2)

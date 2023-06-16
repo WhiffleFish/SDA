@@ -66,9 +66,7 @@ function CFR.actions(g::TrackingGame, h::TrackingGameHist)
     end
 end
 
-function is_last_step(g::TrackingGame, k::Vector{Float32})
-    return length(k) == g.max_steps*2 + 1
-end
+is_last_step(g::TrackingGame, k::Vector{Float32}) = length(k) == g.max_steps*2 + 1
 
 # TODO: type stability
 function CFR.actions(g::TrackingGame, k::Vector{Float32})
