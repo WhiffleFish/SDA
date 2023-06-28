@@ -12,6 +12,7 @@ include("TrackingGame.jl")
 include("ObsTrackingGame.jl")
 include("plotting.jl")
 include("reachability.jl")
+include("heuristic.jl")
 export ObsTrackingGame, TrackingGame, plot_multi_traj!
 
 end # module
