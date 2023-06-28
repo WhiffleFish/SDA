@@ -102,9 +102,9 @@ end
 function CFR.utility(g::ObsTrackingGame, p::Int, h::ObsTrackingGameHist)
     x,y = h.sat_state # this works but seems a lil dicey and unclear
     alt = sqrt(x^2 + y^2)
-    guess = g.goal_states[h.guess]
+    guess_alt = g.goal_states[h.guess]
     if abs(alt - h.goal_alt) < g.tol
-        if h.guess == h.goal_alt
+        if guess_alt == h.goal_alt
             return isone(p) ? 1.0 : -1.0
         else
             return isone(p) ? -1.0 : 1.0
