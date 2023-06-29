@@ -33,7 +33,7 @@ struct TrackingGameHist
 end
 
 Base.@kwdef struct TrackingGame{N, G, IS, GS} <: Game{TrackingGameHist, Vector{Float32}}
-    dt::Float64     = 500.
+    dt::Float64     = 1000.
     max_steps::Int  = 8
     n_sectors::Int  = 4
     budget::Int     = typemax(Int)

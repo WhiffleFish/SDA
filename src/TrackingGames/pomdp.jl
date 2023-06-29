@@ -1,14 +1,15 @@
-const TSState = Tuple{Int, Int}
+const TSState = Tuple{Int, Int} # (goal_idx, burn_idx)
 
-struct TrackingStationPOMDP{G} <: POMDP{TSState, Int, Bool}
+struct TrackingStationPOMDP{G} <: POMDPs.POMDP{TSState, Int, Bool}
     trajs::Vector{Vector{SVector{4,Float64}}}
     game::G
 end
 
-function TrackingStationPOMDP(game::G)
+function TrackingStationPOMDP(game::Game)
+    @assert game.n_sectors+1 == length(game.sat_actions)
     trajs = TrackingGames.traverse(game)
     state_trajs = collect_traj_states(game, trajs)
-    return TrackingStateionPOMDP(state_trajs, game)
+    return TrackingStationPOMDP(state_trajs, game)
 end
 
 function collect_traj_states(game, trajs)
@@ -39,35 +40,51 @@ function flatten_trajs(state_trajs)
 end
 
 function POMDPs.states(p::TrackingStationPOMDP)
-    ss = vec([(i,j) for i ∈ eachindex(p.trajs), j ∈ eachindex(first(p.trajs))])
+    ss = vec([(i,j) for j ∈ eachindex(first(p.trajs)), i ∈ eachindex(p.trajs)])
     push!(ss, (-1,-1)) # terminal
     return ss
 end
 
-POMDPs.actions(p::TrackingStationPOMDP) = 1:p.game.n_sectors
+POMDPs.actions(p::TrackingStationPOMDP) = 0:p.game.n_sectors
 POMDPs.observations(::TrackingStationPOMDP) = (true, false)
 
+function POMDPs.stateindex(p::TrackingStationPOMDP, s::TSState)
+    if s === (-1,-1)
+        return length(p.trajs)*length(first(p.trajs)) + 1
+    else
+        k = length(first(p.trajs))
+        return k*(first(s)-1) + last(s)
+    end
+end
+POMDPs.actionindex(::TrackingStationPOMDP, a) = a+1
+POMDPs.obsindex(::TrackingStationPOMDP, o::Bool) = o ? 1 : 2
+
 function POMDPs.observation(p::TrackingStationPOMDP, a, sp)
-    iszero(a) && return Deterministic(false)
+    (iszero(a) || POMDPs.isterminal(p, sp)) && return POMDPTools.Deterministic(false)
     x = p.trajs[first(sp)][last(sp)]
     θ = mod2pi(atan(x[2], x[1]))
     sector_div = 2π / p.game.n_sectors
     sector = Int(θ ÷ sector_div)
-    return Deterministic(sector == a)
+    return POMDPTools.Deterministic(sector == a)
 end
 
 function POMDPs.transition(p::TrackingStationPOMDP, s, a)
-    goal_idx, state_idx = s
+    POMDPs.isterminal(p, s) && return Deterministic(s)
+    goal_idx, state_idx = s 
     return if state_idx < length(first(p.trajs))
-        Deterministic((goal_idx, state_idx+1))
+        POMDPTools.Deterministic((goal_idx, state_idx+1))
     else
-        Deterministic((-1,-1))
+        POMDPTools.Deterministic((-1,-1))
     end
 end
 
-POMDPs.discount(::TrackingStationPOMDP) = 1.0
+POMDPs.discount(::TrackingStationPOMDP) = 1. - eps()
 
-function POMDPs.reward(p::TrackingStatePOMDP, s, a)
+POMDPs.initialstate(p::TrackingStationPOMDP) = POMDPTools.Uniform([
+    (i,1) for i ∈ eachindex(p.trajs)
+])
+
+function POMDPs.reward(p::TrackingStationPOMDP, s, a)
     goal_idx, state_idx = s
     return if state_idx < length(first(p.trajs))
         0.0
