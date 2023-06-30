@@ -10,10 +10,10 @@ const INITIAL_SAT_STATES = (
 
 const GOAL_ALTS = (
     1.5R_EARTH,
-    1.7R_EARTH,
-    1.9R_EARTH,
-    2.1R_EARTH,
-    2.3R_EARTH
+    2.5R_EARTH,
+    3.5R_EARTH,
+    4.5R_EARTH,
+    5.5R_EARTH
 )
 
 goal_alt(vec::AbstractVector) = vec[2]
@@ -34,7 +34,7 @@ end
 
 Base.@kwdef struct TrackingGame{N, G, IS, GS} <: Game{TrackingGameHist, Vector{Float32}}
     dt::Float64     = 1000.
-    max_steps::Int  = 8
+    max_steps::Int  = 10
     n_sectors::Int  = 4
     budget::Int     = typemax(Int)
     gen::G          = GenCache(dt)

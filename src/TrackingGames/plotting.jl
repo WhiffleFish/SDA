@@ -13,11 +13,12 @@ function plot_multi_traj!(p, game, k, σ; α::Float64=1.0)
     end
 end
 
-function plot_traj!(p, game, s, Δv, α=1.0) # TODO: return final state, so we don't have to redo the step
+function plot_traj!(p, game, s, Δv, α=1.0)
     u0 = bump_vel(s, Δv)
     sys = ContinuousDynamicalSystem(sat_dynamics, u0, 0.0)
-    X,t = trajectory(sys, game.dt, Δt = game.dt/100)
+    X,t = trajectory(sys, game.dt, Δt = game.dt/500)
     plot!(p, X[:,1], X[:,2], lw=3, c=:red, label="", alpha=α)
+    return last(X)
 end
 
 function plot_satellite_trajectories(sol; init_state_idx::Int=1, goal_idx::Int=1, max_depth=sol.game.max_steps-1, prob_thresh=1e-2, show_earth=true, kwargs...)
@@ -45,10 +46,11 @@ function plot_sat_strats!(p, sol, I, s, η=1.0, d=0; max_depth=10, prob_thresh=1
     A = sol.game.sat_actions
     for i in eachindex(σ, A)
         η′ = η*σ[i]
-        η′ > prob_thresh && plot_traj!(p, sol.game, s, A[i], η′)
-        s′ = step(sol.game, s, A[i])
-        I′ = push!(copy(I), A[i])
-        plot_sat_strats!(p, sol, I′, s′, η′, d+1; max_depth, prob_thresh)
+        if η′ > prob_thresh
+            s′ = plot_traj!(p, sol.game, s, A[i], η′)
+            I′ = push!(copy(I), A[i])
+            plot_sat_strats!(p, sol, I′, s′, η′, d+1; max_depth, prob_thresh)
+        end
     end
     nothing
 end
